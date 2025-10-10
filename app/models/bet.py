@@ -1,10 +1,7 @@
-from pydantic import BaseModel
-from typing import Optional
+from pydantic import BaseModel, Field
 
 class Bet(BaseModel):
-    id: int
-    user_id: int
-    match_id: int
-    amount: float
+    match_id: str
+    amount: float = Field(gt=0, description="Bet amount must be greater than zero")
     odds: float
-    result: Optional[str] = None
+    prediction: str

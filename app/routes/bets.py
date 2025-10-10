@@ -1,18 +1,29 @@
 from fastapi import APIRouter, HTTPException
 from app.services.bet_service import BetService
-from app.models.bet import Bet
 
-router = APIRouter(prefix="/bets", tags=["bets"])
+router = APIRouter(prefix="/matches", tags=["matches"])
+
+@router.get("/")
+async def get_bets(user_id: str):
+    try:
+        response = await BetService.get_bets(user_id=user_id)
+        return response
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
 
 @router.post("/")
-def place_bet(bet: Bet):
+async def place_bet(user_id: str):
     try:
-        result = BetService.place_bet(
-            user_id=bet.user_id,
-            match_id=bet.match_id,
-            amount=bet.amount,
-            odds=bet.odds
-        )
-        return {"success": True, "bet": result}
+        response = await BetService.place_bet(user_id=user_id)
+        return response
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e))
+    
+@router.delete("/{bet_id}")
+async def delete_bet(bet_id: str, user_id: str):
+    try:
+        response = await BetService.delete_bet(bet_id=bet_id, user_id=user_id)
+        return response
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
