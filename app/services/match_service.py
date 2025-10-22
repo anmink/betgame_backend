@@ -65,12 +65,13 @@ class MatchService:
             try:
                 respone_delete = supabase.table("matches").delete().neq("fixture_id", 0).execute()
                 response_insert = supabase.table("matches").insert([m.dict() for m in matches]).execute()
+                print("matches updated successfully")
                 return respone_delete, response_insert
             except Exception as e:
                 raise HTTPException(status_code=500, detail=str(e))
             
     @staticmethod
-    async def get_matches() -> List[Match]:
+    async def get_matches():
         try:
             response = supabase.table("matches").select("*").execute()
             matches_data = response.data

@@ -2,7 +2,6 @@ from fastapi import APIRouter, HTTPException
 from app.services.match_service import MatchService
 
 router = APIRouter(prefix="/matches", tags=["matches"])
-    
 
 @router.get("/")
 async def get_matches():
