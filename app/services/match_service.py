@@ -21,7 +21,6 @@ class MatchService:
         url_odds = f"{BASE_URL}/odds?league={LEAGUE}&season={SEASON}&bookmaker={BOOKMAKERS}&bet={BETS}"
 
         async with httpx.AsyncClient() as client:
-            print("hi")
             response_fixtures = await client.get(url_fixtures, headers=headers)
             response_odds = await client.get(url_odds, headers=headers)
             
@@ -69,5 +68,15 @@ class MatchService:
                 return respone_delete, response_insert
             except Exception as e:
                 raise HTTPException(status_code=500, detail=str(e))
+            
+    @staticmethod
+    async def get_matches() -> List[Match]:
+        try:
+            response = supabase.table("matches").select("*").execute()
+            matches_data = response.data
+            """ matches = [Match(**data) for data in matches_data] """
+            return matches_data
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e))
             
             

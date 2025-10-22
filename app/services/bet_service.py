@@ -1,6 +1,6 @@
 # app/services/bet_service.py
 from app.db.supabase_client import supabase
-from app.models.bet import BetModel
+from app.models.bet import Bet
 from fastapi import HTTPException
 
 class BetService:
@@ -12,7 +12,7 @@ class BetService:
         return response.data
     
     @staticmethod
-    async def place_bet(bet: BetModel, user_id: str):
+    async def place_bet(bet: Bet, user_id: str):
         # 1. Nutzer abrufen
         user = supabase.table("users").select("*").eq("id", user_id).single().execute()
         balance = user.data["balance"]
