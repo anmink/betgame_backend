@@ -22,13 +22,27 @@ class MatchService:
 
         async with httpx.AsyncClient() as client:
             response_fixtures = await client.get(url_fixtures, headers=headers)
-            response_odds = await client.get(url_odds, headers=headers)
+            #response_odds = await client.get(url_odds, headers=headers)
             
             fixtures = response_fixtures.json()
-            odds = response_odds.json()
+            #odds = response_odds.json()
+
+            odd_responses = []
+            page = 1
+            total_pages = 1  # Startwert, wird nach erstem Request aktualisiert
+
+            while page <= total_pages:
+                response_odds = await client.get(f"{url_odds}&page={page}", headers=headers)
+                data = response_odds.json()
+                odd_responses.extend(data.get("response", []))
+                total_pages = data.get("paging", {}).get("total", 1)
+                page += 1
 
             combined = []
-            odd_dict = {item["fixture"]["id"]: item for item in odds["response"]}
+            odd_dict = {item["fixture"]["id"]: item for item in odd_responses}
+            print('odd dict', odd_dict)
+            print('odd response', odd_responses)
+            print('total pages', total_pages)
 
             for fixture in fixtures["response"]:
                 fixture_id = fixture["fixture"]["id"]
@@ -60,7 +74,7 @@ class MatchService:
                     odd_draw = float(values[1]["odd"]) if len(values) > 0 else None,
                     odd_away = float(values[2]["odd"]) if len(values) > 0 else None,
                 )
-                matches.append(match) 
+                matches.append(match)
 
             try:
                 respone_delete = supabase.table("matches").delete().neq("fixture_id", 0).execute()
