@@ -1,12 +1,13 @@
 # app/main.py
 from fastapi import FastAPI
-from app.routes import bets, matches
+from app.routes import bets, matches, auth
 from app.jobs.scheduler import start_scheduler
 
 app = FastAPI(title="Sports Bets API")
 
 app.include_router(bets.router)
 app.include_router(matches.router)
+app.include_router(auth.router)
 
 start_scheduler()
 

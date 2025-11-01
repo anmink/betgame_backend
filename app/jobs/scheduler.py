@@ -5,7 +5,7 @@ import asyncio
 scheduler = BackgroundScheduler()
 
 def start_scheduler():
-    scheduler.add_job(fetch_matches_job, "interval", minutes=15)
+    scheduler.add_job(fetch_matches_job, "interval", minutes=1)
     scheduler.start()
 
 def fetch_matches_job():
