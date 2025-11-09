@@ -6,16 +6,19 @@ from fastapi import HTTPException
 class BetService:
     @staticmethod
     async def get_bets(user_id: str):
-        response = supabase.table("bets").select("*").eq("user_id", user_id).execute()
-        if response.error:
-            raise HTTPException(status_code=500, detail="Error fetching bets")
-        return response.data
+        try:
+            response = supabase.table("bets").select("*").eq("user_id", user_id).execute()
+            return response.data
+        except Exception as e:
+            raise Exception(f"Error fetching bets: {e}")
     
     @staticmethod
     async def place_bet(bet: Bet, user_id: str):
         # 1. Nutzer abrufen
-        user = supabase.table("users").select("*").eq("id", user_id).single().execute()
-        balance = user.data["balance"]
+        response = supabase.table("users").select("*").eq("id", user_id).execute()
+        user = response.data[0]
+        balance = user["balance"]
+        print(user)
 
         # 2. Prüfen, ob genug Guthaben vorhanden ist
         if balance < bet.amount:
@@ -29,7 +32,6 @@ class BetService:
             "amount": bet.amount,
             "odds": bet.odds,
             "prediction": bet.prediction,
-            "status": "open"
         }).execute()
 
         return {"message": "Bet placed successfully"}
