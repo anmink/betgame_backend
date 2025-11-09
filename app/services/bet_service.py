@@ -18,7 +18,6 @@ class BetService:
         response = supabase.table("users").select("*").eq("id", user_id).execute()
         user = response.data[0]
         balance = user["balance"]
-        print(user)
 
         # 2. Prüfen, ob genug Guthaben vorhanden ist
         if balance < bet.amount:
@@ -37,16 +36,24 @@ class BetService:
         return {"message": "Bet placed successfully"}
     
     @staticmethod
-    async def delete_bet(bet_id: str, user_id: str):
-        bet = supabase.table("bets").select("*").eq("id", bet_id).single().execute()
-        if bet.data["status"] != "open":
-            raise HTTPException(status_code=400, detail="Bet already closed")
+    async def delete_bet(bet_id: str, user_id: str, match_id: str):
+        response_bet = supabase.table("bets").select("*").eq("id", bet_id).execute()
+        bet = response_bet.data[0]
+        bet_amount = bet["amount"]
+        response_match = supabase.table("matches").select("*").eq("fixture_id", match_id).execute()
+        match = response_match.data[0]
+        match_status = match["fixture_status"]
 
-        # Einsatz zurückzahlen
-        user = supabase.table("users").select("*").eq("id", user_id).single().execute()
-        balance = user.data["balance"] + bet.data["amount"]
+        print(match_id)
 
-        supabase.table("users").update({"balance": balance}).eq("id", user_id).execute()
+        if match_status != "Not Started":
+            raise HTTPException(status_code=400, detail="Game has already started or finished")
+        response_user = supabase.table("users").select("*").eq("id", user_id).execute()
+        user = response_user.data[0]
+        user_balance = user["balance"]
+        new_user_balance = user_balance + bet_amount
+
+        supabase.table("users").update({"balance": new_user_balance}).eq("id", user_id).execute()
         supabase.table("bets").delete().eq("id", bet_id).execute()
 
         return {"message": "Bet deleted successfully"}

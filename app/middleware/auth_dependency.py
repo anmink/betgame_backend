@@ -8,8 +8,6 @@ load_dotenv()
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 
-print(SUPABASE_URL)
-
 async def get_current_user(authorization: str = Header(...)):
     if not authorization.startswith("Bearer"):
         raise HTTPException(status_code=401, detail="Invalid authorization header")
@@ -28,5 +26,4 @@ async def get_current_user(authorization: str = Header(...)):
         raise HTTPException(status_code=401, detail="Invalid or expired token")
     
     user_data = response.json()
-    print("hi", user_data)
     return user_data
