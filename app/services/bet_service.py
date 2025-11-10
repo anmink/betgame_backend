@@ -1,7 +1,9 @@
 # app/services/bet_service.py
 from app.db.supabase_client import supabase
 from app.models.bet import Bet
-from fastapi import HTTPException
+from app.middleware.auth_dependency import get_current_user
+from fastapi import HTTPException, Depends
+
 
 class BetService:
     @staticmethod
@@ -57,6 +59,36 @@ class BetService:
         supabase.table("bets").delete().eq("id", bet_id).execute()
 
         return {"message": "Bet deleted successfully"}
+    
+    @staticmethod
+    async def check_bet():
+        try:
+            user_id = "6de5b915-2c47-4d58-8266-eb1c610850d5"
+            bets_response = supabase.table("bets").select("*").eq("user_id", user_id).execute()
+            bets = bets_response.data
+
+            users_response = supabase.table("users").select("*").eq("id", user_id).execute()
+            user = users_response.data[0]
+
+            if not bets:
+                return {"message": "Not bets"}
+            
+            for bet in bets:
+                matches_response = supabase.table("matches").select("*").eq("fixture_id", bet["match_id"]).execute()
+                matches = matches_response.data[0]
+                if matches["fixture_status"] == "Match Finished":
+                    print("123")
+                    
+                    
+                    #supabase.table("bets").update({"game_status": matches["fixture_status"]}).eq("match_id", bet["match_id"]).execute()
+                else:
+                    print("not started")
+
+
+
+
+        except Exception as e:
+            raise Exception(f"Error fetching bets: {e}")
 
 
         
