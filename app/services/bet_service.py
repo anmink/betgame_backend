@@ -75,14 +75,38 @@ class BetService:
             
             for bet in bets:
                 matches_response = supabase.table("matches").select("*").eq("fixture_id", bet["match_id"]).execute()
-                matches = matches_response.data[0]
-                if matches["fixture_status"] == "Match Finished":
-                    print("123")
+                match = matches_response.data[0]
+                if bet["check_status"] == None:
+                    if match["fixture_status"] == "Match Finished":
+                        """ print("check bet", bet["match_id"])
+                        print("prediction was...", bet["prediction"])
+                        print("result was...", match["teamhome_winner"], match["teamaway_winner"])
+                        print("user amount before check", user["balance"]) """
+                        if bet["prediction"] == "home" and match["teamhome_winner"] == True:
+                            win_money = bet["amount"] * bet["odds"]
+                            new_user_amount = win_money + user["balance"]
+                            supabase.table("users").update({"balance": new_user_amount}).eq("id", user_id).execute()
+                            supabase.table("bets").update({"check_status": True}).eq("match_id", bet["match_id"]).execute()
+                        elif bet["prediction"] == "away" and match["teamaway_winner"] == True:
+                            win_money = bet["amount"] * bet["odds"]
+                            new_user_amount = win_money + user["balance"]
+                            supabase.table("users").update({"balance": new_user_amount}).eq("id", user_id).execute()
+                            supabase.table("bets").update({"check_status": True}).eq("match_id", bet["match_id"]).execute()
+                        elif bet["prediction"] == "draw" and match["teamhome_winner"] == None and match["teamaway_winner"] == None:
+                            win_money = bet["amount"] * bet["odds"]
+                            new_user_amount = win_money + user["balance"]
+                            supabase.table("users").update({"balance": new_user_amount}).eq("id", user_id).execute()
+                            supabase.table("bets").update({"check_status": True}).eq("match_id", bet["match_id"]).execute()
+                        else:
+                            print("no win")
+                            supabase.table("bets").update({"check_status": True}).eq("match_id", bet["match_id"]).execute()
+                    else:
+                        print("not started", bet["match_id"])
                     
                     
-                    #supabase.table("bets").update({"game_status": matches["fixture_status"]}).eq("match_id", bet["match_id"]).execute()
+                    
                 else:
-                    print("not started")
+                    print("bet has been checked before", bet["match_id"])
 
 
 
