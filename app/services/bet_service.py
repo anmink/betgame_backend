@@ -9,7 +9,31 @@ class BetService:
     @staticmethod
     async def get_bets(user_id: str):
         try:
-            response = supabase.table("bets").select("*").eq("user_id", user_id).execute()
+            query = (
+            supabase
+            .from_("bets")
+            .select("""
+                id,
+                amount,
+                prediction,
+                odds,
+                match_id,
+                matches (
+                    fixture_id,
+                    fixture_date,
+                    fixture_status,
+                    league_name,
+                    teamhome_name,
+                    teamhome_logo,
+                    teamaway_name,
+                    teamaway_logo,
+                    goal_home,
+                    goal_away
+                )
+            """)
+            .eq("user_id", user_id)
+        )
+            response = query.execute()
             return response.data
         except Exception as e:
             raise Exception(f"Error fetching bets: {e}")
@@ -102,14 +126,8 @@ class BetService:
                             supabase.table("bets").update({"check_status": True}).eq("match_id", bet["match_id"]).execute()
                     else:
                         print("not started", bet["match_id"])
-                    
-                    
-                    
                 else:
                     print("bet has been checked before", bet["match_id"])
-
-
-
 
         except Exception as e:
             raise Exception(f"Error fetching bets: {e}")
