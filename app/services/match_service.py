@@ -15,6 +15,25 @@ BETS = "1"
 
 class MatchService:
     @staticmethod
+    async def get_current_round():
+        headers = {"X-RapidAPI-Key": API_KEY}
+        url_round = f"{BASE_URL}/fixtures/rounds?league={LEAGUE}&season={SEASON}&current=true"
+
+        async with httpx.AsyncClient() as client:
+            response_round = await client.get(url_round, headers=headers)
+            round = response_round.json()["response"][0]
+            round_number = round.split("-")[-1].strip()
+            print(round_number)
+
+        try:
+            delete_current_round = supabase.table("system_values").delete().eq("key", "current_round").execute()
+            insert_current_round = supabase.table("system_values").insert({"key": "current_round", "value": round_number}).execute()
+            print("current round erfasst")
+            return delete_current_round, insert_current_round
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e))
+
+    @staticmethod
     async def fetch_matches():
         headers = {"X-RapidAPI-Key": API_KEY}
         url_fixtures = f"{BASE_URL}/fixtures?league={LEAGUE}&season={SEASON}"
@@ -93,5 +112,4 @@ class MatchService:
             return matches_data
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
-            
             

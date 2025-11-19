@@ -8,6 +8,7 @@ scheduler = BackgroundScheduler()
 def start_scheduler():
     scheduler.add_job(fetch_matches_job, "interval", minutes=15)
     scheduler.add_job(check_bets_job, "interval", minutes=15)
+    scheduler.add_job(check_current_round, "interval", day_of_week=1)
     scheduler.start()
 
 def fetch_matches_job():
@@ -17,3 +18,7 @@ def fetch_matches_job():
 def check_bets_job():
     asyncio.run(BetService.check_bet())
     print("Cronjob: Check bets erfolgreich ausgeführt")
+
+def check_current_round():
+    asyncio.run(MatchService.get_current_round())
+    print("Cronjob: current round erfolgreich ausgeführt")
