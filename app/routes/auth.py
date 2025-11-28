@@ -17,7 +17,6 @@ async def register_user(data: dict):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-
 # Token Validierung (geschützte Route)
 @router.get("/validate")
 async def validate_token(request: Request):
