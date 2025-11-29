@@ -70,8 +70,6 @@ class BetService:
         match = response_match.data[0]
         match_status = match["fixture_status"]
 
-        print(match_id)
-
         if match_status != "Not Started":
             raise HTTPException(status_code=400, detail="Game has already started or finished")
         response_user = supabase.table("users").select("*").eq("id", user_id).execute()
@@ -102,10 +100,6 @@ class BetService:
                 match = matches_response.data[0]
                 if bet["check_status"] == None:
                     if match["fixture_status"] == "Match Finished":
-                        """ print("check bet", bet["match_id"])
-                        print("prediction was...", bet["prediction"])
-                        print("result was...", match["teamhome_winner"], match["teamaway_winner"])
-                        print("user amount before check", user["balance"]) """
                         if bet["prediction"] == "home" and match["teamhome_winner"] == True:
                             win_money = bet["amount"] * bet["odds"]
                             new_user_amount = win_money + user["balance"]
@@ -122,7 +116,6 @@ class BetService:
                             supabase.table("users").update({"balance": new_user_amount}).eq("id", user_id).execute()
                             supabase.table("bets").update({"check_status": True}).eq("match_id", bet["match_id"]).execute()
                         else:
-                            print("no win")
                             supabase.table("bets").update({"check_status": True}).eq("match_id", bet["match_id"]).execute()
                     else:
                         print("not started", bet["match_id"])

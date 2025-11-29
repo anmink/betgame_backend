@@ -11,7 +11,6 @@ async def register_user(data: dict):
     try:
         user_id = data["user_id"]
         email = data["email"]
-        print(user_id, email)
         result = await AuthService.register_user(user_id, email)
         return result
     except Exception as e:

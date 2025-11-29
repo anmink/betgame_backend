@@ -23,12 +23,10 @@ class MatchService:
             response_round = await client.get(url_round, headers=headers)
             round = response_round.json()["response"][0]
             round_number = round.split("-")[-1].strip()
-            print(round_number)
 
         try:
             delete_current_round = supabase.table("system_values").delete().eq("key", "current_round").execute()
             insert_current_round = supabase.table("system_values").insert({"key": "current_round", "value": round_number}).execute()
-            print("current round erfasst")
             return delete_current_round, insert_current_round
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
@@ -59,9 +57,6 @@ class MatchService:
 
             combined = []
             odd_dict = {item["fixture"]["id"]: item for item in odd_responses}
-            print('odd dict', odd_dict)
-            print('odd response', odd_responses)
-            print('total pages', total_pages)
 
             for fixture in fixtures["response"]:
                 fixture_id = fixture["fixture"]["id"]
