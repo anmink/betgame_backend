@@ -13,11 +13,14 @@ SEASON = "2025"
 BOOKMAKERS = "2"
 BETS = "1"
 
+
 class MatchService:
     @staticmethod
     async def get_current_round():
         headers = {"X-RapidAPI-Key": API_KEY}
-        url_round = f"{BASE_URL}/fixtures/rounds?league={LEAGUE}&season={SEASON}&current=true"
+        url_round = (
+            f"{BASE_URL}/fixtures/rounds?league={LEAGUE}&season={SEASON}&current=true"
+        )
 
         async with httpx.AsyncClient() as client:
             response_round = await client.get(url_round, headers=headers)
@@ -25,8 +28,17 @@ class MatchService:
             round_number = round.split("-")[-1].strip()
 
         try:
-            delete_current_round = supabase.table("system_values").delete().eq("key", "current_round").execute()
-            insert_current_round = supabase.table("system_values").insert({"key": "current_round", "value": round_number}).execute()
+            delete_current_round = (
+                supabase.table("system_values")
+                .delete()
+                .eq("key", "current_round")
+                .execute()
+            )
+            insert_current_round = (
+                supabase.table("system_values")
+                .insert({"key": "current_round", "value": round_number})
+                .execute()
+            )
             return delete_current_round, insert_current_round
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
@@ -39,17 +51,19 @@ class MatchService:
 
         async with httpx.AsyncClient() as client:
             response_fixtures = await client.get(url_fixtures, headers=headers)
-            #response_odds = await client.get(url_odds, headers=headers)
-            
+            # response_odds = await client.get(url_odds, headers=headers)
+
             fixtures = response_fixtures.json()
-            #odds = response_odds.json()
+            # odds = response_odds.json()
 
             odd_responses = []
             page = 1
             total_pages = 1  # Startwert, wird nach erstem Request aktualisiert
 
             while page <= total_pages:
-                response_odds = await client.get(f"{url_odds}&page={page}", headers=headers)
+                response_odds = await client.get(
+                    f"{url_odds}&page={page}", headers=headers
+                )
                 data = response_odds.json()
                 odd_responses.extend(data.get("response", []))
                 total_pages = data.get("paging", {}).get("total", 1)
@@ -65,17 +79,26 @@ class MatchService:
                 else:
                     merged = fixture
                 combined.append(merged)
-            
+
             matches = []
             for item in combined:
-                values = item.get("bookmakers", [{}])[0].get("bets", [{}])[0].get("values", [])
+                values = (
+                    item.get("bookmakers", [{}])[0]
+                    .get("bets", [{}])[0]
+                    .get("values", [])
+                )
                 match = Match(
                     fixture_id=item.get("fixture", {}).get("id"),
                     fixture_date=item.get("fixture", {}).get("date"),
-                    fixture_status=item.get("fixture", {}).get("status", {}).get("long"),
+                    fixture_status=item.get("fixture", {})
+                    .get("status", {})
+                    .get("long"),
                     league_id=item.get("league", {}).get("id"),
                     league_name=item.get("league", {}).get("name"),
-                    league_round=item.get("league", {}).get("round", "Unknown").split("-")[-1].strip(),
+                    league_round=item.get("league", {})
+                    .get("round", "Unknown")
+                    .split("-")[-1]
+                    .strip(),
                     teamhome_name=item.get("teams", {}).get("home", {}).get("name"),
                     teamhome_logo=item.get("teams", {}).get("home", {}).get("logo"),
                     teamhome_winner=item.get("teams", {}).get("home", {}).get("winner"),
@@ -84,20 +107,23 @@ class MatchService:
                     teamaway_winner=item.get("teams", {}).get("away", {}).get("winner"),
                     goal_home=item.get("goals", {}).get("home"),
                     goal_away=item.get("goals", {}).get("away"),
-                    odd_home = float(values[0]["odd"]) if len(values) > 0 else None,
-                    odd_draw = float(values[1]["odd"]) if len(values) > 0 else None,
-                    odd_away = float(values[2]["odd"]) if len(values) > 0 else None,
+                    odd_home=float(values[0]["odd"]) if len(values) > 0 else None,
+                    odd_draw=float(values[1]["odd"]) if len(values) > 0 else None,
+                    odd_away=float(values[2]["odd"]) if len(values) > 0 else None,
                 )
                 matches.append(match)
 
             try:
-                respone_delete = supabase.table("matches").delete().neq("fixture_id", 0).execute()
-                response_insert = supabase.table("matches").insert([m.dict() for m in matches]).execute()
+                response_upsert = (
+                    supabase.table("matches")
+                    .upsert([m.dict() for m in matches], on_conflict="fixture_id")
+                    .execute()
+                )
                 print("matches updated successfully")
-                return respone_delete, response_insert
+                return response_upsert
             except Exception as e:
                 raise HTTPException(status_code=500, detail=str(e))
-            
+
     @staticmethod
     async def get_matches():
         try:
@@ -107,4 +133,3 @@ class MatchService:
             return matches_data
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
-            
