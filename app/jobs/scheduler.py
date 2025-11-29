@@ -5,25 +5,25 @@ import asyncio
 
 scheduler = BackgroundScheduler()
 
+
 def start_scheduler():
     scheduler.add_job(fetch_matches_job, "interval", minutes=15)
     scheduler.add_job(check_bets_job, "interval", minutes=5)
     scheduler.add_job(
-        check_current_round,
-        trigger="cron",
-        day_of_week="tue",
-        hour=10,
-        minute=0
+        check_current_round, trigger="cron", day_of_week="tue", hour=10, minute=0
     )
     scheduler.start()
+
 
 def fetch_matches_job():
     asyncio.run(MatchService.fetch_matches())
     print("Cronjob: Matches erfolgreich aktualisiert")
 
+
 def check_bets_job():
     asyncio.run(BetService.check_bet())
-    print("Cronjob: Check bets erfolgreich ausgeführt")
+    print("Cronjob: Check bets erfolgreich ausgeführt", flush=True)
+
 
 def check_current_round():
     asyncio.run(MatchService.get_current_round())
