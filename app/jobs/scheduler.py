@@ -8,7 +8,7 @@ scheduler = BackgroundScheduler()
 
 def start_scheduler():
     scheduler.add_job(fetch_matches_job, "interval", minutes=15)
-    scheduler.add_job(check_bets_job, "interval", seconds=20)
+    scheduler.add_job(check_bets_job, "interval", minutes=5)
     scheduler.add_job(
         check_current_round, trigger="cron", day_of_week="tue", hour=10, minute=0
     )
