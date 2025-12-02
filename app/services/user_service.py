@@ -4,7 +4,7 @@ from fastapi import HTTPException
 
 
 class UserService:
-    async def get_bets(user_id: str):
+    async def get_user(user_id: str):
         try:
             response = (
                 supabase.table("users")

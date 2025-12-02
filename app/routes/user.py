@@ -10,8 +10,7 @@ router = APIRouter(prefix="/user", tags=["user"])
 @router.get("/")
 async def get_user(current_user: dict = Depends(get_current_user)):
     try:
-        """user_id = current_user["id"]"""
-        user_id = "6de5b915-2c47-4d58-8266-eb1c610850d5"
+        user_id = current_user["id"]
         response = await UserService.get_user(user_id)
         return response
     except Exception as e:
