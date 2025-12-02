@@ -27,8 +27,8 @@ def root():
     return {"message": "API läuft"}
 
 
-@app.on_event("shutdown")
+""" @app.on_event("shutdown")
 def shutdown_event():
     from app.jobs.scheduler import scheduler
 
-    scheduler.shutdown()
+    scheduler.shutdown() """
