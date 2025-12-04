@@ -133,3 +133,43 @@ class MatchService:
             return matches_data
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
+
+    @staticmethod
+    async def get_matches_by_rounds():
+        response_round = (
+            supabase.table("system_values")
+            .select("*")
+            .eq("key", "current_round")
+            .execute()
+            .data
+        )
+        current_round = int(response_round[0]["value"])
+
+        response_matches = await MatchService.get_matches()
+
+        grouped = {}
+        for m in response_matches:
+            r = int(m["league_round"])
+            if r not in grouped:
+                grouped[r] = []
+            grouped[r].append(m)
+
+        rounds = sorted(grouped.keys())
+
+        current_matches = [
+            {"round": current_round, "matches": grouped.get(current_round, [])}
+        ]
+
+        past_rounds = sorted([r for r in rounds if r < current_round], reverse=True)
+        past_matches = [{"round": r, "matches": grouped[r]} for r in past_rounds]
+
+        future_rounds = sorted([r for r in rounds if r > current_round])
+        future_matches = [{"round": r, "matches": grouped[r]} for r in future_rounds]
+
+        dict = {
+            "current": current_matches,
+            "past": past_matches,
+            "future": future_matches,
+        }
+
+        return dict

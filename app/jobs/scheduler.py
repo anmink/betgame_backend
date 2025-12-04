@@ -12,6 +12,7 @@ def start_scheduler():
     scheduler.add_job(
         check_current_round, trigger="cron", day_of_week="tue", hour=10, minute=0
     )
+    """ scheduler.add_job(test, "interval", seconds=5) """
     scheduler.start()
 
 
@@ -28,3 +29,8 @@ def check_bets_job():
 def check_current_round():
     asyncio.run(MatchService.get_current_round())
     print("Cronjob: current round erfolgreich ausgeführt", flush=True)
+
+
+def test():
+    asyncio.run(MatchService.get_matches_by_rounds())
+    print("Cronjob matches by rounds")
