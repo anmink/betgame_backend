@@ -17,6 +17,7 @@ class BetService:
                 prediction,
                 odds,
                 match_id,
+                status,
                 matches (
                     fixture_id,
                     fixture_date,
