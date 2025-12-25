@@ -68,6 +68,9 @@ class BetService:
 
     @staticmethod
     async def delete_bet(bet_id: str, user_id: str, match_id: str):
+        print("bet", bet_id)
+        print("match", match_id)
+        print("user", user_id)
         response_bet = supabase.table("bets").select("*").eq("id", bet_id).execute()
         bet = response_bet.data[0]
         bet_amount = bet["amount"]
