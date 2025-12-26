@@ -68,9 +68,41 @@ class BetService:
 
     @staticmethod
     async def delete_bet(bet_id: str, user_id: str, match_id: str):
-        print("bet", bet_id)
-        print("match", match_id)
-        print("user", user_id)
+        print("service bet id", bet_id)
+        print("service match", match_id)
+        response_match = (
+            supabase.table("matches").select("*").eq("fixture_id", match_id).execute()
+        )
+        match = response_match.data[0]
+
+        response_bet = supabase.table("bets").select("*").eq("id", bet_id).execute()
+        bet = response_bet.data[0]
+
+        if match["fixture_status"] != "Not Started":
+            raise HTTPException(
+                status_code=400, detail="Game has already started or finished"
+            )
+
+        print("Bet kann gelöscht werden")
+        response_user = supabase.table("users").select("*").eq("id", user_id).execute()
+        user = response_user.data[0]
+        new_user_balance = user["balance"] + bet["amount"]
+        print("old", user["balance"])
+        print("new", new_user_balance)
+
+        supabase.table("users").update({"balance": new_user_balance}).eq(
+            "id", user_id
+        ).execute()
+        supabase.table("bets").delete().eq("id", bet_id).execute()
+
+        print("deleted")
+        return {"message": "Bet deleted successfully"}
+
+    """ @staticmethod
+    async def delete_bet(bet_id: str, user_id: str, match_id: str):
+        print("bet service", bet_id)
+        print("match service", match_id)
+        print("user service", user_id)
         response_bet = supabase.table("bets").select("*").eq("id", bet_id).execute()
         bet = response_bet.data[0]
         bet_amount = bet["amount"]
@@ -79,6 +111,9 @@ class BetService:
         )
         match = response_match.data[0]
         match_status = match["fixture_status"]
+
+        print("bet bet", bet)
+        print("match match", match)
 
         if match_status != "Not Started":
             raise HTTPException(
@@ -94,7 +129,7 @@ class BetService:
         ).execute()
         supabase.table("bets").delete().eq("id", bet_id).execute()
 
-        return {"message": "Bet deleted successfully"}
+        return {"message": "Bet deleted successfully"} """
 
     @staticmethod
     async def check_bets():
