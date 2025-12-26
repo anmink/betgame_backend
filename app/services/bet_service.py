@@ -8,34 +8,45 @@ class BetService:
     @staticmethod
     async def get_bets(user_id: str):
         try:
-            query = (
+            response = (
                 supabase.from_("bets")
                 .select(
                     """
-                id,
-                amount,
-                prediction,
-                odds,
-                match_id,
-                status,
-                matches (
-                    fixture_id,
-                    fixture_date,
-                    fixture_status,
-                    league_name,
-                    teamhome_name,
-                    teamhome_logo,
-                    teamaway_name,
-                    teamaway_logo,
-                    goal_home,
-                    goal_away
-                )
-            """
+                    id,
+                    amount,
+                    prediction,
+                    odds,
+                    match_id,
+                    status,
+                    matches (
+                        fixture_id,
+                        fixture_date,
+                        fixture_status,
+                        league_name,
+                        teamhome_name,
+                        teamhome_logo,
+                        teamaway_name,
+                        teamaway_logo,
+                        goal_home,
+                        goal_away
+                    )
+                """
                 )
                 .eq("user_id", user_id)
+                .execute()
             )
-            response = query.execute()
-            return response.data
+
+            # Sortiere: Jüngstes Datum zuerst (reverse=True)
+            sorted_bets = sorted(
+                response.data,
+                key=lambda bet: (
+                    bet["matches"]["fixture_date"] if bet.get("matches") else ""
+                ),
+                reverse=True,  # Neueste/Jüngste Datum zuerst
+            )
+
+            return sorted_bets
+
         except Exception as e:
             raise Exception(f"Error fetching bets: {e}")
 
