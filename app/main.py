@@ -30,5 +30,4 @@ def root():
 """ @app.on_event("shutdown")
 def shutdown_event():
     from app.jobs.scheduler import scheduler
-
     scheduler.shutdown() """

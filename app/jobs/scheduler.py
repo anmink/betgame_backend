@@ -12,7 +12,7 @@ def start_scheduler():
     scheduler.add_job(
         check_current_round, trigger="cron", day_of_week="tue", hour=10, minute=0
     )
-    """ scheduler.add_job(test, "interval", seconds=5) """
+    """ scheduler.add_job(check_current_round, "interval", seconds=5) """
     scheduler.start()
 
 

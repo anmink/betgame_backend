@@ -143,13 +143,12 @@ class MatchService:
             .execute()
             .data
         )
-        current_round = int(response_round[0]["value"])
-
+        current_round = response_round[0]["value"]
         response_matches = await MatchService.get_matches()
 
         grouped = {}
         for m in response_matches:
-            r = int(m["league_round"])
+            r = m["league_round"]
             if r not in grouped:
                 grouped[r] = []
             grouped[r].append(m)

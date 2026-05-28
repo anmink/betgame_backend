@@ -14,6 +14,7 @@ async def get_current_user(authorization: str = Header(...)):
         raise HTTPException(status_code=401, detail="Invalid authorization header")
 
     token = authorization.split(" ")[1]
+    print(token)
 
     response = requests.get(
         f"{SUPABASE_URL}/auth/v1/user",
