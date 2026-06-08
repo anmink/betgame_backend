@@ -8,10 +8,16 @@ from fastapi import HTTPException
 
 API_KEY = os.getenv("API_FOOTBALL_KEY")
 BASE_URL = "https://v3.football.api-sports.io"
-LEAGUE = "78"
-SEASON = "2025"
 BOOKMAKERS = "2"
 BETS = "1"
+
+# Bundesliga
+LEAGUE = "78"
+SEASON = "2025"
+
+# WM 2026
+#LEAGUE = "1"
+#SEASON = "2026"
 
 
 class MatchService:
