@@ -14,7 +14,6 @@ Entwickelt als persönliches Fullstack-Projekt, um Python-Backend-Entwicklung, P
 | Datenbank | PostgreSQL via Supabase |
 | Authentifizierung | JWT (PyJWT) |
 | Geplante Aufgaben | APScheduler |
-| Tests | pytest, pytest-mock |
 | Laufzeit | uvicorn |
 | Containerisierung | Docker |
 | CI/CD | GitHub Actions |
@@ -111,8 +110,7 @@ pytest tests/ -v
 
 Jeder Push auf `main` löst eine GitHub Actions Pipeline aus, die:
 
-1. Alle pytest-Tests ausführt
-2. Das Docker-Image baut (nur bei grünen Tests)
+1. Das Docker-Image baut
 
 ---
 
