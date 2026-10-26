@@ -8,15 +8,15 @@ Entwickelt als persönliches Fullstack-Projekt, um Python-Backend-Entwicklung, P
 
 ## Tech Stack
 
-| Bereich | Technologie |
-|---|---|
-| Framework | FastAPI |
-| Datenbank | PostgreSQL via Supabase |
-| Authentifizierung | JWT (PyJWT) |
-| Geplante Aufgaben | APScheduler |
-| Laufzeit | uvicorn |
-| Containerisierung | Docker |
-| CI/CD | GitHub Actions |
+| Bereich           | Technologie             |
+| ----------------- | ----------------------- |
+| Framework         | FastAPI                 |
+| Datenbank         | PostgreSQL via Supabase |
+| Authentifizierung | JWT (PyJWT)             |
+| Geplante Aufgaben | APScheduler             |
+| Laufzeit          | uvicorn                 |
+| Containerisierung | Docker                  |
+| CI/CD             | GitHub Actions          |
 
 ---
 
@@ -91,9 +91,9 @@ docker run -p 8000:8000 --env-file .env betgame-backend
 ## Umgebungsvariablen
 
 ```env
-SUPABASE_URL=deine_supabase_projekt_url
-SUPABASE_KEY=dein_supabase_anon_key
-JWT_SECRET=dein_jwt_secret
+SUPABASE_URL=
+SUPABASE_SERVICE_KEY=
+API_FOOTBALL_KEY=
 ```
 
 ---

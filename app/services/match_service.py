@@ -5,8 +5,10 @@ from typing import List
 from app.models.match import Match
 from app.db.supabase_client import supabase
 from fastapi import HTTPException
+from app.core.config import settings
 
-API_KEY = os.getenv("API_FOOTBALL_KEY")
+
+API_KEY = settings.api_football_key
 BASE_URL = "https://v3.football.api-sports.io"
 BOOKMAKERS = "2"
 BETS = "1"

@@ -1,12 +1,10 @@
 import os
 import requests
 from fastapi import Header, HTTPException, Depends
-from dotenv import load_dotenv
+from app.core.config import settings
 
-load_dotenv()
-
-SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+SUPABASE_URL = settings.supabase_url
+SUPABASE_KEY = settings.supabase_service_key
 
 
 async def get_current_user(authorization: str = Header(...)):

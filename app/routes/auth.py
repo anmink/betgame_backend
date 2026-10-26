@@ -2,6 +2,10 @@ from fastapi import APIRouter, HTTPException, Request
 from app.services.auth_service import AuthService
 import requests
 import os
+from app.core.config import settings
+
+SUPABASE_URL = settings.supabase_url
+SUPABASE_KEY = settings.supabase_service_key
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
@@ -33,8 +37,8 @@ async def validate_token(request: Request):
 
     # Supabase Token prüfen
     response = requests.get(
-        f"{os.getenv('SUPABASE_URL')}/auth/v1/user",
-        headers={"Authorization": token, "apikey": os.getenv("SUPABASE_KEY")},
+        f"{SUPABASE_URL}/auth/v1/user",
+        headers={"Authorization": token, "apikey": SUPABASE_KEY},
     )
 
     if response.status_code != 200:
