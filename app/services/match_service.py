@@ -122,7 +122,6 @@ class MatchService:
                     .upsert([m.dict() for m in matches], on_conflict="fixture_id")
                     .execute()
                 )
-                print("matches updated successfully")
                 return response_upsert
             except Exception as e:
                 raise HTTPException(status_code=500, detail=str(e))

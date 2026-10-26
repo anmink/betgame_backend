@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends
-from app.middleware.auth_dependency import get_current_user
 from app.services.user_service import UserService
 from app.models.user import User
+from app.core.security import get_current_user
 
 
 router = APIRouter(prefix="/user", tags=["user"])
