@@ -1,7 +1,6 @@
 from fastapi import APIRouter, HTTPException, Request
 from app.services.auth_service import AuthService
 import requests
-import os
 from app.core.config import settings
 
 SUPABASE_URL = settings.supabase_url

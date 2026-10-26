@@ -1,5 +1,4 @@
 import httpx
-import os
 import json
 from typing import List
 from app.models.match import Match
@@ -9,17 +8,13 @@ from app.core.config import settings
 
 
 API_KEY = settings.api_football_key
-BASE_URL = "https://v3.football.api-sports.io"
-BOOKMAKERS = "2"
-BETS = "1"
+BASE_URL = settings.api_football_base_url
+BOOKMAKERS = settings.bookmakers
+BETS = settings.bets
 
 # Bundesliga
-LEAGUE = "78"
-SEASON = "2025"
-
-# WM 2026
-#LEAGUE = "1"
-#SEASON = "2026"
+LEAGUE = settings.league_id
+SEASON = settings.season
 
 
 class MatchService:
