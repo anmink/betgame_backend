@@ -1,10 +1,8 @@
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, HTTPException, Depends
+from app.core.security import get_current_user
+from app.services.user_service import UserService
 from app.services.auth_service import AuthService
-import requests
-from app.core.config import settings
-
-SUPABASE_URL = settings.supabase_url
-SUPABASE_KEY = settings.supabase_service_key
+from app.schemas.auth import AuthResponse, LoginRequest, UserOut
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
@@ -20,25 +18,11 @@ async def register_user(data: dict):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@router.post("/login", response_model=AuthResponse)
+async def login(credentials: LoginRequest):
+    return await AuthService.login(credentials.email, credentials.password)
 
-# Token Validierung (geschützte Route)
-@router.get("/validate")
-async def validate_token(request: Request):
-    token = request.headers.get("Authorization")
-    if not token:
-        raise HTTPException(status_code=401, detail="Missing token")
-
-    if not token.lower().startswith("bearer "):
-        token = f"Bearer {token}"
-
-    # Supabase Token prüfen
-    response = requests.get(
-        f"{SUPABASE_URL}/auth/v1/user",
-        headers={"Authorization": token, "apikey": SUPABASE_KEY},
-    )
-
-    if response.status_code != 200:
-        raise HTTPException(status_code=401, detail="Invalid token")
-
-    user_data = response.json()
-    return {"user": user_data}
+@router.get("/me", response_model=UserOut)
+async def me(current_user: dict = Depends(get_current_user)):
+    row = await UserService.get_user(current_user["id"])
+    return UserOut(user_id=row["id"], username=row["username"], balance=row["balance"])
