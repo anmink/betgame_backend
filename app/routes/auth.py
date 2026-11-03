@@ -1,22 +1,14 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, Depends
 from app.core.security import get_current_user
 from app.services.user_service import UserService
 from app.services.auth_service import AuthService
-from app.schemas.auth import AuthResponse, LoginRequest, UserOut
+from app.schemas.auth import AuthResponse, LoginRequest, UserOut, RegisterRequest
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
-
-# Registrierung
-@router.post("/register")
-async def register_user(data: dict):
-    try:
-        user_id = data["user_id"]
-        email = data["email"]
-        result = await AuthService.register_user(user_id, email)
-        return result
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+@router.post("/register", response_model=AuthResponse, status_code=201)
+async def register(data: RegisterRequest):
+    return await AuthService.register(data.email, data.password)
 
 @router.post("/login", response_model=AuthResponse)
 async def login(credentials: LoginRequest):
