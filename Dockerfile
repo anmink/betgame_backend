@@ -1,6 +1,6 @@
 FROM python:3.12-slim
 
-WORKDIR /Users/mac/Desktop/sports-bets-api/app
+WORKDIR /app
 
 COPY requirements.txt .
 RUN pip install -r requirements.txt
