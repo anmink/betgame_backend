@@ -1,7 +1,8 @@
 # app/services/bet_service.py
+from fastapi import HTTPException
+
 from app.db.supabase_client import supabase
 from app.models.bet import Bet
-from fastapi import HTTPException
 
 
 class BetService:
@@ -39,16 +40,14 @@ class BetService:
             # Sortiere: Jüngstes Datum zuerst (reverse=True)
             sorted_bets = sorted(
                 response.data,
-                key=lambda bet: (
-                    bet["matches"]["fixture_date"] if bet.get("matches") else ""
-                ),
+                key=lambda bet: bet["matches"]["fixture_date"] if bet.get("matches") else "",
                 reverse=True,  # Neueste/Jüngste Datum zuerst
             )
 
             return sorted_bets
 
         except Exception as e:
-            raise Exception(f"Error fetching bets: {e}")
+            raise Exception(f"Error fetching bets: {e}") from e
 
     @staticmethod
     async def place_bet(bet: Bet, user_id: str):
@@ -79,36 +78,27 @@ class BetService:
 
     @staticmethod
     async def delete_bet(bet_id: str, user_id: str, match_id: str):
-        response_match = (
-            supabase.table("matches").select("*").eq("fixture_id", match_id).execute()
-        )
+        response_match = supabase.table("matches").select("*").eq("fixture_id", match_id).execute()
         match = response_match.data[0]
 
         response_bet = supabase.table("bets").select("*").eq("id", bet_id).execute()
         bet = response_bet.data[0]
 
         if match["fixture_status"] != "Not Started":
-            raise HTTPException(
-                status_code=400, detail="Game has already started or finished"
-            )
+            raise HTTPException(status_code=400, detail="Game has already started or finished")
 
         response_user = supabase.table("users").select("*").eq("id", user_id).execute()
         user = response_user.data[0]
         new_user_balance = user["balance"] + bet["amount"]
 
-        supabase.table("users").update({"balance": new_user_balance}).eq(
-            "id", user_id
-        ).execute()
+        supabase.table("users").update({"balance": new_user_balance}).eq("id", user_id).execute()
         supabase.table("bets").delete().eq("id", bet_id).execute()
-
 
         return {"message": "Bet deleted successfully"}
 
     @staticmethod
     async def check_bets():
-        open_bets = (
-            supabase.table("bets").select("*").eq("status", "open").execute().data
-        )
+        open_bets = supabase.table("bets").select("*").eq("status", "open").execute().data
 
         for bet in open_bets:
             matches = (

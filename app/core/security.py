@@ -6,6 +6,7 @@ from app.core.config import settings
 
 bearer_scheme = HTTPBearer()
 
+
 async def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ) -> dict:
@@ -22,8 +23,7 @@ async def get_current_user(
 
     if response.status_code != 200:
         raise HTTPException(
-            status_code = status.HTTP_401_UNAUTHORIZED,
-            detail = "Invalid or expired token"
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired token"
         )
 
     return response.json()

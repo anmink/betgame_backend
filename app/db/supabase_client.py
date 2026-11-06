@@ -1,4 +1,5 @@
 from supabase import create_client
+
 from app.core.config import settings
 
 SUPABASE_URL = settings.supabase_url

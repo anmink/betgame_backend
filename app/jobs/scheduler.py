@@ -1,7 +1,9 @@
-from apscheduler.schedulers.background import BackgroundScheduler
-from app.services.match_service import MatchService
-from app.services.bet_service import BetService
 import asyncio
+
+from apscheduler.schedulers.background import BackgroundScheduler
+
+from app.services.bet_service import BetService
+from app.services.match_service import MatchService
 
 scheduler = BackgroundScheduler()
 
@@ -9,9 +11,7 @@ scheduler = BackgroundScheduler()
 def start_scheduler():
     scheduler.add_job(fetch_matches_job, "interval", minutes=15)
     scheduler.add_job(check_bets_job, "interval", minutes=5)
-    scheduler.add_job(
-        check_current_round, trigger="cron", day_of_week="tue", hour=10, minute=0
-    )
+    scheduler.add_job(check_current_round, trigger="cron", day_of_week="tue", hour=10, minute=0)
     """ scheduler.add_job(check_current_round, "interval", seconds=5) """
     scheduler.start()
 

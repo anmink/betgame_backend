@@ -1,11 +1,9 @@
 import httpx
-import json
-from typing import List
-from app.models.match import Match
-from app.db.supabase_client import supabase
 from fastapi import HTTPException
-from app.core.config import settings
 
+from app.core.config import settings
+from app.db.supabase_client import supabase
+from app.models.match import Match
 
 API_KEY = settings.api_football_key
 BASE_URL = settings.api_football_base_url
@@ -21,9 +19,7 @@ class MatchService:
     @staticmethod
     async def get_current_round():
         headers = {"X-RapidAPI-Key": API_KEY}
-        url_round = (
-            f"{BASE_URL}/fixtures/rounds?league={LEAGUE}&season={SEASON}&current=true"
-        )
+        url_round = f"{BASE_URL}/fixtures/rounds?league={LEAGUE}&season={SEASON}&current=true"
 
         async with httpx.AsyncClient() as client:
             response_round = await client.get(url_round, headers=headers)
@@ -32,10 +28,7 @@ class MatchService:
 
         try:
             delete_current_round = (
-                supabase.table("system_values")
-                .delete()
-                .eq("key", "current_round")
-                .execute()
+                supabase.table("system_values").delete().eq("key", "current_round").execute()
             )
             insert_current_round = (
                 supabase.table("system_values")
@@ -44,13 +37,15 @@ class MatchService:
             )
             return delete_current_round, insert_current_round
         except Exception as e:
-            raise HTTPException(status_code=500, detail=str(e))
+            raise HTTPException(status_code=500, detail=str(e)) from e
 
     @staticmethod
     async def fetch_matches():
         headers = {"X-RapidAPI-Key": API_KEY}
         url_fixtures = f"{BASE_URL}/fixtures?league={LEAGUE}&season={SEASON}"
-        url_odds = f"{BASE_URL}/odds?league={LEAGUE}&season={SEASON}&bookmaker={BOOKMAKERS}&bet={BETS}"
+        url_odds = (
+            f"{BASE_URL}/odds?league={LEAGUE}&season={SEASON}&bookmaker={BOOKMAKERS}&bet={BETS}"
+        )
 
         async with httpx.AsyncClient() as client:
             response_fixtures = await client.get(url_fixtures, headers=headers)
@@ -64,9 +59,7 @@ class MatchService:
             total_pages = 1  # Startwert, wird nach erstem Request aktualisiert
 
             while page <= total_pages:
-                response_odds = await client.get(
-                    f"{url_odds}&page={page}", headers=headers
-                )
+                response_odds = await client.get(f"{url_odds}&page={page}", headers=headers)
                 data = response_odds.json()
                 odd_responses.extend(data.get("response", []))
                 total_pages = data.get("paging", {}).get("total", 1)
@@ -85,17 +78,11 @@ class MatchService:
 
             matches = []
             for item in combined:
-                values = (
-                    item.get("bookmakers", [{}])[0]
-                    .get("bets", [{}])[0]
-                    .get("values", [])
-                )
+                values = item.get("bookmakers", [{}])[0].get("bets", [{}])[0].get("values", [])
                 match = Match(
                     fixture_id=item.get("fixture", {}).get("id"),
                     fixture_date=item.get("fixture", {}).get("date"),
-                    fixture_status=item.get("fixture", {})
-                    .get("status", {})
-                    .get("long"),
+                    fixture_status=item.get("fixture", {}).get("status", {}).get("long"),
                     league_id=item.get("league", {}).get("id"),
                     league_name=item.get("league", {}).get("name"),
                     league_round=item.get("league", {})
@@ -124,7 +111,7 @@ class MatchService:
                 )
                 return response_upsert
             except Exception as e:
-                raise HTTPException(status_code=500, detail=str(e))
+                raise HTTPException(status_code=500, detail=str(e)) from e
 
     @staticmethod
     async def get_matches():
@@ -134,16 +121,12 @@ class MatchService:
             """ matches = [Match(**data) for data in matches_data] """
             return matches_data
         except Exception as e:
-            raise HTTPException(status_code=500, detail=str(e))
+            raise HTTPException(status_code=500, detail=str(e)) from e
 
     @staticmethod
     async def get_matches_by_rounds():
         response_round = (
-            supabase.table("system_values")
-            .select("*")
-            .eq("key", "current_round")
-            .execute()
-            .data
+            supabase.table("system_values").select("*").eq("key", "current_round").execute().data
         )
         current_round = response_round[0]["value"]
         response_matches = await MatchService.get_matches()
@@ -157,9 +140,7 @@ class MatchService:
 
         rounds = sorted(grouped.keys())
 
-        current_matches = [
-            {"round": current_round, "matches": grouped.get(current_round, [])}
-        ]
+        current_matches = [{"round": current_round, "matches": grouped.get(current_round, [])}]
 
         past_rounds = sorted([r for r in rounds if r < current_round], reverse=True)
         past_matches = [{"round": r, "matches": grouped[r]} for r in past_rounds]

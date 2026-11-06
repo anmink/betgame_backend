@@ -1,6 +1,7 @@
 import httpx
 from fastapi import HTTPException, status
 from supabase_auth.errors import AuthApiError
+
 from app.core.config import settings
 from app.db.supabase_client import supabase
 from app.schemas.auth import AuthResponse, UserOut
@@ -61,14 +62,7 @@ class AuthService:
         user_id = data["user"]["id"]
 
         # 2. Spielerdaten aus unserer eigenen Tabelle laden
-        row = (
-            supabase.table("users")
-            .select("*")
-            .eq("id", user_id)
-            .single()
-            .execute()
-            .data
-        )
+        row = supabase.table("users").select("*").eq("id", user_id).single().execute().data
 
         # 3. Ins Antwort-Schema übersetzen (id -> user_id)
         return AuthResponse(

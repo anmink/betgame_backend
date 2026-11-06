@@ -1,9 +1,10 @@
 # app/main.py
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routes import bets, matches, auth, user
-from app.jobs.scheduler import start_scheduler
+
 from app.core.config import settings
+from app.jobs.scheduler import start_scheduler
+from app.routes import auth, bets, matches, user
 
 app = FastAPI(title="Sports Bets API")
 
@@ -21,6 +22,7 @@ app.add_middleware(
 )
 
 start_scheduler()
+
 
 @app.get("/")
 def root():

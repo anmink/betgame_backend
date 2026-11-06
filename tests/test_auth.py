@@ -1,7 +1,11 @@
+from app.services.user_service import UserService
+
+
 def test_me_without_token_is_rejected(client):
     response = client.get("/auth/me")
 
     assert response.status_code in (401, 403)
+
 
 def test_register_rejects_short_password(client):
     response = client.post(
@@ -10,6 +14,7 @@ def test_register_rejects_short_password(client):
     )
 
     assert response.status_code == 422
+
 
 def test_me_returns_current_user(logged_in_client, monkeypatch):
     async def fake_get_user(user_id):
@@ -23,5 +28,5 @@ def test_me_returns_current_user(logged_in_client, monkeypatch):
     assert response.json() == {
         "user_id": "test-user-id",
         "username": "test@example.com",
-        "balance": 100
+        "balance": 100,
     }

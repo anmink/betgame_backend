@@ -13,7 +13,7 @@ class Settings(BaseSettings):
 
     # Werte mit Standard: können in der .env überschrieben werden
     api_football_base_url: str = "https://v3.football.api-sports.io"
-    league_id: int = 78 #Bundesliga
+    league_id: int = 78  # Bundesliga
     season: int = 2026
     bookmakers: int = 2
     bets: int = 1

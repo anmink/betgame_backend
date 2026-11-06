@@ -1,13 +1,14 @@
 import pytest
 from fastapi.testclient import TestClient
 
-from app.main import app
 from app.core.security import get_current_user
+from app.main import app
 
 
 @pytest.fixture
 def client():
     return TestClient(app)
+
 
 @pytest.fixture
 def logged_in_client():

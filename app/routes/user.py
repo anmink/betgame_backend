@@ -1,8 +1,7 @@
-from fastapi import APIRouter, HTTPException, Depends
-from app.services.user_service import UserService
-from app.models.user import User
-from app.core.security import get_current_user
+from fastapi import APIRouter, Depends, HTTPException
 
+from app.core.security import get_current_user
+from app.services.user_service import UserService
 
 router = APIRouter(prefix="/user", tags=["user"])
 
@@ -14,4 +13,4 @@ async def get_user(current_user: dict = Depends(get_current_user)):
         response = await UserService.get_user(user_id)
         return response
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e

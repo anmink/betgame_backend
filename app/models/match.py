@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional
+
 
 class Match(BaseModel):
     fixture_id: int
@@ -10,12 +10,12 @@ class Match(BaseModel):
     league_round: str
     teamhome_name: str
     teamhome_logo: str
-    teamhome_winner: Optional[bool] = None
+    teamhome_winner: bool | None = None
     teamaway_name: str
     teamaway_logo: str
-    teamaway_winner: Optional[bool] = None
-    goal_home: Optional[int] = None
-    goal_away: Optional[int] = None
-    odd_home: Optional[float] = None
-    odd_draw: Optional[float] = None
-    odd_away: Optional[float] = None
+    teamaway_winner: bool | None = None
+    goal_home: int | None = None
+    goal_away: int | None = None
+    odd_home: float | None = None
+    odd_draw: float | None = None
+    odd_away: float | None = None
