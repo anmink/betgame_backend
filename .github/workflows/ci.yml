@@ -25,7 +25,7 @@ jobs:
           cache: "pip"
 
       - name: Dependencies installieren
-        run: pip install -r requirements.txt -r requirements-dev.text
+        run: pip install -r requirements.txt -r requirements-dev.txt
 
       - name: Linter
         run: ruff check .
