@@ -7,6 +7,7 @@ from app.core.config import settings
 from app.jobs.scheduler import scheduler, start_scheduler
 from app.routes import auth, bets, matches, user
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     start_scheduler()
