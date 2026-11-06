@@ -1,12 +1,20 @@
-# app/main.py
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
-from app.jobs.scheduler import start_scheduler
+from app.jobs.scheduler import scheduler, start_scheduler
 from app.routes import auth, bets, matches, user
 
-app = FastAPI(title="Sports Bets API")
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    start_scheduler()
+    yield
+    scheduler.shutdown()
+
+
+app = FastAPI(title="Sports Bets API", lifespan=lifespan)
 
 app.include_router(bets.router)
 app.include_router(matches.router)
@@ -21,15 +29,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-start_scheduler()
-
-
 @app.get("/")
 def root():
     return {"message": "API läuft"}
-
-
-""" @app.on_event("shutdown")
-def shutdown_event():
-    from app.jobs.scheduler import scheduler
-    scheduler.shutdown() """
