@@ -25,7 +25,7 @@ jobs:
           cache: "pip"
 
       - name: Dependencies installieren
-        run: pip install -r requirements.txt && pip install httpx
+        run: pip install -r requirements.txt -r requirements-dev.text
 
       - name: Linter
         run: ruff check .
@@ -38,6 +38,7 @@ jobs:
 
   docker-build:
     runs-on: ubuntu-latest
+    needS: test
 
     steps:
       - name: Code auschecken
