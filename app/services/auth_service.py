@@ -29,7 +29,7 @@ class AuthService:
 
         try:
             supabase.table("users").insert(
-                {"id": user_id, "username": email, "balance": 100}
+                {"id": user_id, "username": email, "coins": 100}
             ).execute()
         except Exception as e:
             supabase.auth.admin.delete_user(user_id)
@@ -70,6 +70,6 @@ class AuthService:
             user=UserOut(
                 user_id=row["id"],
                 username=row["username"],
-                balance=row["balance"],
+                coins=row["coins"],
             ),
         )

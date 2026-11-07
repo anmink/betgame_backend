@@ -14,7 +14,7 @@ class RegisterRequest(BaseModel):
 class UserOut(BaseModel):
     user_id: str
     username: str
-    balance: float
+    coins: float
 
 
 class AuthResponse(BaseModel):

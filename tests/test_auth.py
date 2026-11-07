@@ -18,7 +18,7 @@ def test_register_rejects_short_password(client):
 
 def test_me_returns_current_user(logged_in_client, monkeypatch):
     async def fake_get_user(user_id):
-        return {"id": user_id, "username": "test@example.com", "balance": 100}
+        return {"id": user_id, "username": "test@example.com", "coins": 100}
 
     monkeypatch.setattr(UserService, "get_user", fake_get_user)
 
@@ -28,5 +28,5 @@ def test_me_returns_current_user(logged_in_client, monkeypatch):
     assert response.json() == {
         "user_id": "test-user-id",
         "username": "test@example.com",
-        "balance": 100,
+        "coins": 100,
     }

@@ -14,7 +14,7 @@ class BetService:
                 .select(
                     """
                     id,
-                    amount,
+                    stake,
                     prediction,
                     odds,
                     match_id,
@@ -54,21 +54,21 @@ class BetService:
         # 1. Nutzer abrufen
         response = supabase.table("users").select("*").eq("id", user_id).execute()
         user = response.data[0]
-        balance = user["balance"]
+        coins = user["coins"]
 
         # 2. Prüfen, ob genug Guthaben vorhanden ist
-        if balance < bet.amount:
-            raise HTTPException(status_code=400, detail="Not enough balance")
+        if coins < bet.stake:
+            raise HTTPException(status_code=400, detail="Not enough coins")
 
         # 3. Einsatz abziehen und Wette speichern
-        supabase.table("users").update({"balance": balance - bet.amount}).eq(
+        supabase.table("users").update({"coins": coins - bet.stake}).eq(
             "id", user_id
         ).execute()
         supabase.table("bets").insert(
             {
                 "user_id": user_id,
                 "match_id": bet.match_id,
-                "amount": bet.amount,
+                "stake": bet.stake,
                 "odds": bet.odds,
                 "prediction": bet.prediction,
             }
@@ -89,9 +89,9 @@ class BetService:
 
         response_user = supabase.table("users").select("*").eq("id", user_id).execute()
         user = response_user.data[0]
-        new_user_balance = user["balance"] + bet["amount"]
+        new_user_coins = user["coins"] + bet["stake"]
 
-        supabase.table("users").update({"balance": new_user_balance}).eq("id", user_id).execute()
+        supabase.table("users").update({"coins": new_user_coins}).eq("id", user_id).execute()
         supabase.table("bets").delete().eq("id", bet_id).execute()
 
         return {"message": "Bet deleted successfully"}
@@ -124,16 +124,16 @@ class BetService:
                 if won:
                     user = (
                         supabase.table("users")
-                        .select("balance")
+                        .select("coins")
                         .eq("id", bet["user_id"])
                         .single()
                         .execute()
                     )
-                    user_balance = user.data["balance"]
-                    payout = bet["amount"] * bet["odds"]
-                    new_balance = user_balance + payout
+                    user_coins = user.data["coins"]
+                    payout = bet["stake"] * bet["odds"]
+                    new_coins = user_coins + payout
 
-                    supabase.table("users").update({"balance": new_balance}).eq(
+                    supabase.table("users").update({"coins": new_coins}).eq(
                         "id", bet["user_id"]
                     ).execute()
                 supabase.table("bets").update({"status": "won" if won else "lost"}).eq(

@@ -21,4 +21,4 @@ async def login(credentials: LoginRequest):
 @router.get("/me", response_model=UserOut)
 async def me(current_user: dict = Depends(get_current_user)):
     row = await UserService.get_user(current_user["id"])
-    return UserOut(user_id=row["id"], username=row["username"], balance=row["balance"])
+    return UserOut(user_id=row["id"], username=row["username"], coins=row["coins"])
