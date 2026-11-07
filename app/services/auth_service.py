@@ -4,7 +4,10 @@ from supabase_auth.errors import AuthApiError
 
 from app.core.config import settings
 from app.db.supabase_client import supabase
+from app.repositories.user_repository import UserRepository
 from app.schemas.auth import AuthResponse, UserOut
+
+user_repository = UserRepository()
 
 
 class AuthService:
@@ -28,9 +31,7 @@ class AuthService:
         user_id = result.user.id
 
         try:
-            supabase.table("users").insert(
-                {"id": user_id, "username": email, "coins": 100}
-            ).execute()
+            user_repository.create(user_id, email)
         except Exception as e:
             supabase.auth.admin.delete_user(user_id)
             raise HTTPException(
@@ -62,7 +63,7 @@ class AuthService:
         user_id = data["user"]["id"]
 
         # 2. Spielerdaten aus unserer eigenen Tabelle laden
-        row = supabase.table("users").select("*").eq("id", user_id).single().execute().data
+        row = user_repository.get_by_id(user_id)
 
         # 3. Ins Antwort-Schema übersetzen (id -> user_id)
         return AuthResponse(

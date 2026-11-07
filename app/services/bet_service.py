@@ -61,9 +61,7 @@ class BetService:
             raise HTTPException(status_code=400, detail="Not enough coins")
 
         # 3. Einsatz abziehen und Wette speichern
-        supabase.table("users").update({"coins": coins - bet.stake}).eq(
-            "id", user_id
-        ).execute()
+        supabase.table("users").update({"coins": coins - bet.stake}).eq("id", user_id).execute()
         supabase.table("bets").insert(
             {
                 "user_id": user_id,

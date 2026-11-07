@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends
 
+from app.core.dependencies import get_user_service
 from app.core.security import get_current_user
 from app.schemas.auth import AuthResponse, LoginRequest, RegisterRequest, UserOut
 from app.services.auth_service import AuthService
@@ -19,6 +20,9 @@ async def login(credentials: LoginRequest):
 
 
 @router.get("/me", response_model=UserOut)
-async def me(current_user: dict = Depends(get_current_user)):
-    row = await UserService.get_user(current_user["id"])
+def me(
+    current_user: dict = Depends(get_current_user),
+    user_service: UserService = Depends(get_user_service),
+):
+    row = user_service.get_user(current_user["id"])
     return UserOut(user_id=row["id"], username=row["username"], coins=row["coins"])
