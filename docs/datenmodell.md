@@ -1,103 +1,99 @@
-## Ist-Zustand
+# Datenmodell
 
-### Bets
+Stand: Migration `002_game_economy.sql` (November 2026)
 
-| table_name | column_name | data_type | is_nullable | Hinweis |
-| ---------- | ----------- | --------- | ----------- | ------- |
-| bets       | id          | text      | NO          |         |
-| bets       | amount      | real      | YES         |         |
-| bets       | odds        | real      | YES         |         |
-| bets       | prediction  | text      | YES         |         |
-| bets       | match_id    | bigint    | YES         |         |
-| bets       | status      | text      | YES         |         |
+Die Datenbank liegt bei Supabase (PostgreSQL). Alle Tabellen haben Row Level Security aktiviert und keine Policies. Zugriff hat nur das Backend über den Secret Key.
 
-### Matches
+## Beziehungen
 
-| table_name | column_name     | data_type | is_nullable | Hinweis |
-| ---------- | --------------- | --------- | ----------- | ------- |
-| matches    | fixture_id      | bigint    | NO          |         |
-| matches    | fixture_date    | text      | NO          |         |
-| matches    | fixture_status  | text      | YES         |         |
-| matches    | league_id       | bigint    | YES         |         |
-| matches    | league_name     | text      | YES         |         |
-| matches    | league_round    | text      | YES         |         |
-| matches    | teamhome_name   | text      | YES         |         |
-| matches    | teamhome_logo   | text      | YES         |         |
-| matches    | teamhome_winner | boolean   | YES         |         |
-| matches    | teamaway_name   | text      | YES         |         |
-| matches    | teamaway_logo   | text      | YES         |         |
-| matches    | teamaway_winner | boolean   | YES         |         |
-| matches    | goal_home       | bigint    | YES         |         |
-| matches    | goal_away       | bigint    | YES         |         |
-| matches    | odd_home        | real      | YES         |         |
-| matches    | odd_draw        | real      | YES         |         |
-| matches    | odd_away        | real      | YES         |         |
+```mermaid
+erDiagram
+    AUTH_USERS ||--|| USERS : "gleiche id"
+    USERS ||--o{ BETS : "platziert"
+    MATCHES ||--o{ BETS : "betrifft"
+```
 
-### User
+`kurs` und `system_values` stehen für sich und haben keine Beziehungen.
 
-| table_name | column_name | data_type | is_nullable | Hinweis |
-| ---------- | ----------- | --------- | ----------- | ------- |
-| users      | id          | bigint    | NO          |         |
-| users      | username    | text      | NO          |         |
-| users      | balance     | real      | YES         |         |
-| users      | user_id     | text      | YES         |         |
+## Tabellen
 
-### System Value
+### users
 
-| table_name    | column_name | data_type | is_nullable | Hinweis |
-| ------------- | ----------- | --------- | ----------- | ------- |
-| system_values | key         | text      | NO          |         |
-| system_values | value       | text      | NO          |         |
+Ein Spieler. Die ID ist dieselbe wie in Supabase Auth.
 
-## Soll-Zustand
+| Spalte          | Typ         | Pflicht | Hinweis                                                                       |
+| --------------- | ----------- | ------- | ----------------------------------------------------------------------------- |
+| id              | uuid        | ja      | Primärschlüssel, verweist auf `auth.users(id)`, wird beim Löschen mitgelöscht |
+| username        | text        | ja      | derzeit die E-Mail-Adresse                                                    |
+| coins           | integer     | ja      | Standard 50, nie negativ                                                      |
+| becher          | integer     | ja      | Standard 0, nie negativ                                                       |
+| last_collect_at | timestamptz | nein    | Zeitpunkt des letzten Sammelns, leer bis zum ersten Mal                       |
+| created_at      | timestamptz | ja      | wird automatisch gesetzt                                                      |
 
-### Bets
+### bets
 
-| table_name | column_name | data_type   | is_nullable | Hinweis                               |
-| ---------- | ----------- | ----------- | ----------- | ------------------------------------- |
-| bets       | id          | bigint      | NO          | Primärschlüssel                       |
-| bets       | user_id     | uuid        | NO          | Fremdschlüssel auf users.id           |
-| bets       | match_id    | bigint      | NO          | Fremdschlüssel auf matches.fixture_id |
-| bets       | amount      | numeric     | YES         | > 0                                   |
-| bets       | odds        | numeric     | YES         |                                       |
-| bets       | prediction  | text        | YES         | home, draw oder away                  |
-| bets       | status      | text        | YES         | open, won oder lost                   |
-| bets       | created_at  | timestamptz | YES         |                                       |
+Eine Wette eines Spielers auf ein Spiel.
 
-### Matches
+| Spalte     | Typ         | Pflicht | Hinweis                                              |
+| ---------- | ----------- | ------- | ---------------------------------------------------- |
+| id         | bigint      | ja      | Primärschlüssel, wird automatisch hochgezählt        |
+| user_id    | uuid        | ja      | Fremdschlüssel auf `users.id`                        |
+| match_id   | bigint      | ja      | Fremdschlüssel auf `matches.fixture_id`              |
+| stake      | integer     | ja      | Einsatz in Coins, größer als 0                       |
+| odds       | numeric     | ja      | Quote zum Zeitpunkt der Wette                        |
+| prediction | text        | ja      | `home`, `draw` oder `away`                           |
+| status     | text        | ja      | `open`, `won` oder `lost`, Standard `open`           |
+| payout     | integer     | nein    | Auszahlung in Coins, wird bei der Auswertung gesetzt |
+| created_at | timestamptz | ja      | wird automatisch gesetzt                             |
 
-| table_name | column_name     | data_type | is_nullable | Hinweis |
-| ---------- | --------------- | --------- | ----------- | ------- |
-| matches    | fixture_id      | bigint    | NO          |         |
-| matches    | fixture_date    | text      | NO          |         |
-| matches    | fixture_status  | text      | YES         |         |
-| matches    | league_id       | bigint    | YES         |         |
-| matches    | league_name     | text      | YES         |         |
-| matches    | league_round    | text      | YES         |         |
-| matches    | teamhome_name   | text      | YES         |         |
-| matches    | teamhome_logo   | text      | YES         |         |
-| matches    | teamhome_winner | boolean   | YES         |         |
-| matches    | teamaway_name   | text      | YES         |         |
-| matches    | teamaway_logo   | text      | YES         |         |
-| matches    | teamaway_winner | boolean   | YES         |         |
-| matches    | goal_home       | bigint    | YES         |         |
-| matches    | goal_away       | bigint    | YES         |         |
-| matches    | odd_home        | real      | YES         |         |
-| matches    | odd_draw        | real      | YES         |         |
-| matches    | odd_away        | real      | YES         |         |
+### matches
 
-### User
+Ein Bundesligaspiel, importiert von API-Football.
 
-| table_name | column_name | data_type   | is_nullable | Hinweis                                      |
-| ---------- | ----------- | ----------- | ----------- | -------------------------------------------- |
-| users      | id          | uuid        | NO          | Primärschlüssel, verweist auf auth.users(id) |
-| users      | username    | text        | NO          |                                              |
-| users      | balance     | numeric     | YES         | Startwert 100                                |
-| users      | created_at  | timestamptz | YES         |                                              |
+| Spalte                           | Typ     | Pflicht | Hinweis                                      |
+| -------------------------------- | ------- | ------- | -------------------------------------------- |
+| fixture_id                       | bigint  | ja      | Primärschlüssel, ID von API-Football         |
+| fixture_date                     | text    | ja      | Anstoß als ISO-Datum                         |
+| fixture_status                   | text    | nein    | zum Beispiel `Not Started`, `Match Finished` |
+| league_id                        | bigint  | nein    | 78 = Bundesliga                              |
+| league_name                      | text    | nein    |                                              |
+| league_round                     | text    | nein    | Spieltag                                     |
+| teamhome_name, teamaway_name     | text    | nein    |                                              |
+| teamhome_logo, teamaway_logo     | text    | nein    | URL                                          |
+| teamhome_winner, teamaway_winner | boolean | nein    | leer, solange das Spiel läuft                |
+| goal_home, goal_away             | bigint  | nein    | leer vor dem Anpfiff                         |
+| odd_home, odd_draw, odd_away     | real    | nein    | Quoten für 1, X und 2                        |
 
-### System Value
+### kurs
 
-| table_name    | column_name | data_type | is_nullable | Hinweis |
-| ------------- | ----------- | --------- | ----------- | ------- |
-| system_values | key         | text      | NO          |         |
-| system_values | value       | text      | NO          |         |
+Ein Becherkurs pro Berechnung. Der aktuelle Kurs ist die neueste Zeile.
+
+| Spalte     | Typ         | Pflicht | Hinweis                                       |
+| ---------- | ----------- | ------- | --------------------------------------------- |
+| id         | bigint      | ja      | Primärschlüssel, wird automatisch hochgezählt |
+| value      | numeric     | ja      | zwischen 0,5 und 2,0                          |
+| created_at | timestamptz | ja      | wird automatisch gesetzt                      |
+
+### system_values
+
+Einfache Schlüssel-Wert-Paare für Systemwerte.
+
+| Spalte | Typ  | Pflicht | Hinweis                                       |
+| ------ | ---- | ------- | --------------------------------------------- |
+| key    | text | ja      | Primärschlüssel, zum Beispiel `current_round` |
+| value  | text | ja      |                                               |
+
+## Migrationen
+
+Die Dateien liegen in `db/migrations/` und werden der Reihe nach einmal im Supabase SQL Editor ausgeführt.
+
+| Datei                    | Inhalt                                                     |
+| ------------------------ | ---------------------------------------------------------- |
+| `000_initial_schema.sql` | Ausgangsstand: `matches` und `system_values`               |
+| `001_users_and_bets.sql` | `users` mit Auth-UUID, `bets` mit Fremdschlüsseln          |
+| `002_game_economy.sql`   | Coins, Becher, Sammelzeitpunkt, Auszahlung, Tabelle `kurs` |
+
+## Offene Punkte
+
+- `matches.fixture_date` ist `text`. Besser wäre `timestamptz`, dann kann die Datenbank Zeiten direkt vergleichen, zum Beispiel für den Wettschluss.
+- Die Quoten in `matches` sind `real`, in `bets` aber `numeric`. Einheitlich `numeric` wäre sauberer.
