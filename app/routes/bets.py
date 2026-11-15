@@ -22,11 +22,6 @@ async def place_bet(bet: BetCreate, current_user: dict = Depends(get_current_use
     return await BetService.place_bet(bet, current_user["id"])
 
 
-@router.delete("/")
-async def delete_bet(bet_id: str, match_id: str, current_user: dict = Depends(get_current_user)):
-    try:
-        user_id = current_user["id"]
-        response = await BetService.delete_bet(bet_id=bet_id, user_id=user_id, match_id=match_id)
-        return response
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e)) from e
+@router.delete("/{bet_id}", status_code=204)
+async def cancel_bet(bet_id: int, current_user: dict = Depends(get_current_user)):
+    await BetService.cancel_bet(bet_id, current_user["id"])

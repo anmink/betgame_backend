@@ -1,14 +1,12 @@
 # app/services/bet_service.py
 from datetime import UTC, datetime
 
-from fastapi import HTTPException
-
 from app.core.errors import BettingClosedError, NotFoundError
 from app.db.supabase_client import supabase
 from app.repositories.bet_repository import BetRepository
 from app.repositories.match_repository import MatchRepository
 from app.schemas.bet import BetCreate
-from app.services.betting_rules import is_betting_open, odds_for, is_winning, calculate_payout
+from app.services.betting_rules import calculate_payout, is_betting_open, is_winning, odds_for
 
 match_repository = MatchRepository()
 bet_repository = BetRepository()
@@ -72,24 +70,8 @@ class BetService:
         return {"bet_id": bet_id}
 
     @staticmethod
-    async def delete_bet(bet_id: str, user_id: str, match_id: str):
-        response_match = supabase.table("matches").select("*").eq("fixture_id", match_id).execute()
-        match = response_match.data[0]
-
-        response_bet = supabase.table("bets").select("*").eq("id", bet_id).execute()
-        bet = response_bet.data[0]
-
-        if match["fixture_status"] != "Not Started":
-            raise HTTPException(status_code=400, detail="Game has already started or finished")
-
-        response_user = supabase.table("users").select("*").eq("id", user_id).execute()
-        user = response_user.data[0]
-        new_user_coins = user["coins"] + bet["stake"]
-
-        supabase.table("users").update({"coins": new_user_coins}).eq("id", user_id).execute()
-        supabase.table("bets").delete().eq("id", bet_id).execute()
-
-        return {"message": "Bet deleted successfully"}
+    async def cancel_bet(bet_id: int, user_id: str):
+        bet_repository.cancel(user_id, bet_id)
 
     @staticmethod
     async def check_bets():

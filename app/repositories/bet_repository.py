@@ -1,7 +1,7 @@
 from postgrest.exceptions import APIError
 from supabase import Client
 
-from app.core.errors import InsufficientCoinsError
+from app.core.errors import BettingClosedError, InsufficientCoinsError
 from app.db.supabase_client import supabase
 
 
@@ -43,3 +43,11 @@ class BetRepository:
         self.client.rpc(
             "settle_bet", {"p_bet_id": bet_id, "p_won": won, "p_payout": payout}
         ).execute()
+
+    def cancel(self, user_id: str, bet_id: int) -> None:
+        try:
+            self.client.rpc("cancel_bet", {"p_user_id": user_id, "p_bet_id": bet_id}).execute()
+        except APIError as e:
+            if "bet_not_cancellable" in (e.message or ""):
+                raise BettingClosedError("Bet can no longer be cancelled") from e
+            raise
