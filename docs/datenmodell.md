@@ -1,6 +1,6 @@
 # Datenmodell
 
-Stand: Migration `002_game_economy.sql` (November 2026)
+Stand: Migration `003_place_bet.sql` (November 2026)
 
 Die Datenbank liegt bei Supabase (PostgreSQL). Alle Tabellen haben Row Level Security aktiviert und keine Policies. Zugriff hat nur das Backend über den Secret Key.
 

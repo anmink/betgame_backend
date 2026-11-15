@@ -3,13 +3,15 @@ from datetime import UTC, datetime
 
 from fastapi import HTTPException
 
-from app.core.errors import BettingClosedError, InsufficientCoinsError, NotFoundError
+from app.core.errors import BettingClosedError, NotFoundError
 from app.db.supabase_client import supabase
+from app.repositories.bet_repository import BetRepository
 from app.repositories.match_repository import MatchRepository
 from app.schemas.bet import BetCreate
 from app.services.betting_rules import is_betting_open, odds_for
 
 match_repository = MatchRepository()
+bet_repository = BetRepository()
 
 
 class BetService:
@@ -65,23 +67,9 @@ class BetService:
             raise BettingClosedError("Betting is closed for this match")
         odds = odds_for(match, bet.prediction)
 
-        response = supabase.table("users").select("*").eq("id", user_id).execute()
-        coins = response.data[0]["coins"]
-        if coins < bet.stake:
-            raise InsufficientCoinsError("Not enough coins")
+        bet_id = bet_repository.place(user_id, bet.match_id, bet.stake, bet.prediction, odds)
 
-        supabase.table("users").update({"coins": coins - bet.stake}).eq("id", user_id)
-        supabase.table("bets").insert(
-            {
-                "user_id": user_id,
-                "match_id": bet.match_id,
-                "stake": bet.stake,
-                "odds": odds,
-                "prediction": bet.prediction,
-            }
-        ).execute()
-
-        return {"message": "Bet placed successfully"}
+        return {"bet_id": bet_id}
 
     @staticmethod
     async def delete_bet(bet_id: str, user_id: str, match_id: str):
