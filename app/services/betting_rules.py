@@ -1,4 +1,6 @@
+import math
 from datetime import datetime
+from decimal import Decimal
 
 from app.core.errors import BettingClosedError
 
@@ -15,3 +17,17 @@ def odds_for(match: dict, prediction: str) -> float:
     if odds is None:
         raise BettingClosedError("No odds available for this match")
     return odds
+
+
+def is_winning(prediction: str, goals_home: int, goals_away: int) -> bool:
+    if goals_home > goals_away:
+        result = "home"
+    elif goals_home < goals_away:
+        result = "away"
+    else:
+        result = "draw"
+    return prediction == result
+
+
+def calculate_payout(stake: int, odds: float) -> int:
+    return math.floor(Decimal(str(odds)) * stake)

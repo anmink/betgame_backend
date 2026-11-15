@@ -8,7 +8,7 @@ from app.db.supabase_client import supabase
 from app.repositories.bet_repository import BetRepository
 from app.repositories.match_repository import MatchRepository
 from app.schemas.bet import BetCreate
-from app.services.betting_rules import is_betting_open, odds_for
+from app.services.betting_rules import is_betting_open, odds_for, is_winning, calculate_payout
 
 match_repository = MatchRepository()
 bet_repository = BetRepository()
@@ -93,44 +93,11 @@ class BetService:
 
     @staticmethod
     async def check_bets():
-        open_bets = supabase.table("bets").select("*").eq("status", "open").execute().data
+        for bet in bet_repository.list_open():
+            match = match_repository.get_by_id(bet["match_id"])
+            if match is None or match["fixture_status"] != "Match Finished":
+                continue
 
-        for bet in open_bets:
-            matches = (
-                supabase.table("matches")
-                .select("*")
-                .eq("fixture_id", bet["match_id"])
-                .single()
-                .execute()
-                .data
-            )
-
-            if matches["fixture_status"] == "Match Finished":
-                prediction = bet["prediction"]
-                home_goals = matches["goal_home"]
-                away_goals = matches["goal_away"]
-
-                won = (
-                    (prediction == "home" and home_goals > away_goals)
-                    or (prediction == "away" and home_goals < away_goals)
-                    or (prediction == "draw" and home_goals == away_goals)
-                )
-
-                if won:
-                    user = (
-                        supabase.table("users")
-                        .select("coins")
-                        .eq("id", bet["user_id"])
-                        .single()
-                        .execute()
-                    )
-                    user_coins = user.data["coins"]
-                    payout = bet["stake"] * bet["odds"]
-                    new_coins = user_coins + payout
-
-                    supabase.table("users").update({"coins": new_coins}).eq(
-                        "id", bet["user_id"]
-                    ).execute()
-                supabase.table("bets").update({"status": "won" if won else "lost"}).eq(
-                    "id", bet["id"]
-                ).execute()
+            won = is_winning(bet["prediction"], match["goal_home"], match["goal_away"])
+            payout = calculate_payout(bet["stake"], bet["odds"]) if won else 0
+            bet_repository.settle(bet["id"], won, payout)

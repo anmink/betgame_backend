@@ -38,3 +38,8 @@ class BetRepository:
                 raise InsufficientCoinsError("Not enough coins") from e
             raise
         return result.data
+
+    def settle(self, bet_id: int, won: bool, payout: int) -> None:
+        self.client.rpc(
+            "settle_bet", {"p_bet_id": bet_id, "p_won": won, "p_payout": payout}
+        ).execute()
