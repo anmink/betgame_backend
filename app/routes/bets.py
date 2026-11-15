@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 
 from app.core.security import get_current_user
-from app.models.bet import Bet
+from app.schemas.bet import BetCreate
 from app.services.bet_service import BetService
 
 router = APIRouter(prefix="/bets", tags=["bets"])
@@ -17,14 +17,9 @@ async def get_bets(current_user: dict = Depends(get_current_user)):
         raise HTTPException(status_code=500, detail=str(e)) from e
 
 
-@router.post("/")
-async def place_bet(bet: Bet, current_user: dict = Depends(get_current_user)):
-    try:
-        user_id = current_user["id"]
-        response = await BetService.place_bet(bet, user_id)
-        return response
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e)) from e
+@router.post("/", status_code=201)
+async def place_bet(bet: BetCreate, current_user: dict = Depends(get_current_user)):
+    return await BetService.place_bet(bet, current_user["id"])
 
 
 @router.delete("/")

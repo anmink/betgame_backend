@@ -1,8 +1,15 @@
 # app/services/bet_service.py
+from datetime import UTC, datetime
+
 from fastapi import HTTPException
 
+from app.core.errors import BettingClosedError, InsufficientCoinsError, NotFoundError
 from app.db.supabase_client import supabase
-from app.models.bet import Bet
+from app.repositories.match_repository import MatchRepository
+from app.schemas.bet import BetCreate
+from app.services.betting_rules import is_betting_open, odds_for
+
+match_repository = MatchRepository()
 
 
 class BetService:
@@ -50,24 +57,26 @@ class BetService:
             raise Exception(f"Error fetching bets: {e}") from e
 
     @staticmethod
-    async def place_bet(bet: Bet, user_id: str):
-        # 1. Nutzer abrufen
+    async def place_bet(bet: BetCreate, user_id: str):
+        match = match_repository.get_by_id(bet.match_id)
+        if match is None:
+            raise NotFoundError("Match not found")
+        if not is_betting_open(match, datetime.now(UTC)):
+            raise BettingClosedError("Betting is closed for this match")
+        odds = odds_for(match, bet.prediction)
+
         response = supabase.table("users").select("*").eq("id", user_id).execute()
-        user = response.data[0]
-        coins = user["coins"]
-
-        # 2. Prüfen, ob genug Guthaben vorhanden ist
+        coins = response.data[0]["coins"]
         if coins < bet.stake:
-            raise HTTPException(status_code=400, detail="Not enough coins")
+            raise InsufficientCoinsError("Not enough coins")
 
-        # 3. Einsatz abziehen und Wette speichern
-        supabase.table("users").update({"coins": coins - bet.stake}).eq("id", user_id).execute()
+        supabase.table("users").update({"coins": coins - bet.stake}).eq("id", user_id)
         supabase.table("bets").insert(
             {
                 "user_id": user_id,
                 "match_id": bet.match_id,
                 "stake": bet.stake,
-                "odds": bet.odds,
+                "odds": odds,
                 "prediction": bet.prediction,
             }
         ).execute()
