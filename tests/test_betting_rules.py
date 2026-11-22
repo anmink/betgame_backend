@@ -3,7 +3,7 @@ from datetime import UTC, datetime
 import pytest
 
 from app.core.errors import BettingClosedError
-from app.services.betting_rules import is_betting_open, odds_for, is_winning, calculate_payout
+from app.services.betting_rules import calculate_payout, is_betting_open, is_winning, odds_for
 
 MATCH = {
     "fixture_status": "Not Started",
