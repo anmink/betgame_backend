@@ -29,4 +29,4 @@ class MatchRepository:
             .lte("fixture_date", end)
             .execute()
         )
-        return [datetime.fromisoformat(row["fixture_date"]) for row in result.date]
+        return [datetime.fromisoformat(row["fixture_date"]) for row in result.data]
