@@ -7,7 +7,7 @@ from fastapi.responses import JSONResponse
 from app.core.config import settings
 from app.core.errors import BetgameError
 from app.jobs.scheduler import scheduler, start_scheduler
-from app.routes import auth, bets, matches, user
+from app.routes import auth, bets, collect, matches, user
 
 
 @asynccontextmanager
@@ -23,6 +23,7 @@ app.include_router(bets.router)
 app.include_router(matches.router)
 app.include_router(auth.router)
 app.include_router(user.router)
+app.include_router(collect.router)
 
 app.add_middleware(
     CORSMiddleware,
