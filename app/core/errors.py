@@ -18,3 +18,7 @@ class BettingClosedError(BetgameError):
 
 class InsufficientCoinsError(BetgameError):
     status_code = 409
+
+
+class CooldownActiveError(BetgameError):
+    status_code = 409

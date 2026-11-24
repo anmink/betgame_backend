@@ -1,5 +1,9 @@
+from datetime import datetime, timedelta
+
+from postgrest.exceptions import APIError
 from supabase import Client
 
+from app.core.errors import CooldownActiveError
 from app.core.game_config import START_COINS
 from app.db.supabase_client import supabase
 
@@ -19,3 +23,20 @@ class UserRepository:
             .execute()
         )
         return result.data[0]
+
+    def collect_cups(self, user_id: str, cups: int, now: datetime, cooldown: timedelta) -> int:
+        try:
+            result = self.client.rpc(
+                "collect_cups",
+                {
+                    "p_user_id": user_id,
+                    "p_cups": cups,
+                    "p_now": now.isoformat(),
+                    "p_cooldown": f"{int(cooldown.total_seconds())} seconds",
+                },
+            ).execute()
+        except APIError as e:
+            if "cooldown_active" in (e.message or ""):
+                raise CooldownActiveError("You can collect again later") from e
+            raise
+        return int(result.data)
